@@ -89,9 +89,9 @@ function container_inventory_nonempty(pos)
         -- Retourne vrai si la liste n'est pas vide
 		--si listname.main[1] n'est pas null alors
 		--envoie le nom de l'item dans le chat
-		minetest.chat_send_all(inv:get_stack(listname, 1):get_name())
+		--minetest.chat_send_all(inv:get_stack(listname, 1):get_name())
 		-- et le nombre d'item dans le chat
-		minetest.chat_send_all(inv:get_stack(listname, 1):get_count())
+		--minetest.chat_send_all(inv:get_stack(listname, 1):get_count())
 
 		if inv:get_stack(listname, 1):get_count() > 10 then return true end
 
