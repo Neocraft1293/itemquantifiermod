@@ -1,8 +1,8 @@
 local S = minetest.get_translator(minetest.get_current_modname())
 
--- Functions that get the input/output rules of the comparator
+-- Functions that get the input/output rules of the itemquantifier
 
-local function comparator_get_output_rules(node)
+local function itemquantifier_get_output_rules(node)
 	local rules = {{x = -1, y = 0, z = 0, spread=true}}
 	for i = 0, node.param2 do
 		rules = mesecon.rotate_rules_left(rules)
@@ -11,7 +11,7 @@ local function comparator_get_output_rules(node)
 end
 
 
-local function comparator_get_input_rules(node)
+local function itemquantifier_get_input_rules(node)
 	local rules = {
 		-- we rely on this order in update_self below
 		{x = 1, y = 0, z =  0},  -- back
@@ -27,37 +27,37 @@ end
 
 -- Functions that are called after the delay time
 
-local function comparator_turnon(params)
-	local rules = comparator_get_output_rules(params.node)
+local function itemquantifier_turnon(params)
+	local rules = itemquantifier_get_output_rules(params.node)
 	mesecon.receptor_on(params.pos, rules)
 end
 
 
-local function comparator_turnoff(params)
-	local rules = comparator_get_output_rules(params.node)
+local function itemquantifier_turnoff(params)
+	local rules = itemquantifier_get_output_rules(params.node)
 	mesecon.receptor_off(params.pos, rules)
 end
 
 
 -- Functions that set the correct node type an schedule a turnon/off
 
-local function comparator_activate(pos, node)
+local function itemquantifier_activate(pos, node)
 	local def = minetest.registered_nodes[node.name]
-	local onstate = def.comparator_onstate
+	local onstate = def.itemquantifier_onstate
 	if onstate then
 		minetest.swap_node(pos, { name = onstate, param2 = node.param2 })
 	end
-	minetest.after(0.1, comparator_turnon , {pos = pos, node = node})
+	minetest.after(0.1, itemquantifier_turnon , {pos = pos, node = node})
 end
 
 
-local function comparator_deactivate(pos, node)
+local function itemquantifier_deactivate(pos, node)
 	local def = minetest.registered_nodes[node.name]
-	local offstate = def.comparator_offstate
+	local offstate = def.itemquantifier_offstate
 	if offstate then
 		minetest.swap_node(pos, { name = offstate, param2 = node.param2 })
 	end
-	minetest.after(0.1, comparator_turnoff, {pos = pos, node = node})
+	minetest.after(0.1, itemquantifier_turnoff, {pos = pos, node = node})
 end
 
 
@@ -109,16 +109,16 @@ function container_inventory_nonempty(pos)
 end
 
 
--- weather pos has an constant signal output for the comparator
+-- weather pos has an constant signal output for the itemquantifier
 local function static_signal_output(pos)
 	local node = minetest.get_node(pos)
-	local g = minetest.get_item_group(node.name, "comparator_signal")
+	local g = minetest.get_item_group(node.name, "itemquantifier_signal")
 	return g > 0
 end
 
--- whether the comparator should be on according to its inputs
-local function comparator_desired_on(pos, node)
-	local my_input_rules = comparator_get_input_rules(node);
+-- whether the itemquantifier should be on according to its inputs
+local function itemquantifier_desired_on(pos, node)
+	local my_input_rules = itemquantifier_get_input_rules(node);
 	local back_rule = my_input_rules[1]
 	local state
 	if back_rule then
@@ -131,7 +131,7 @@ local function comparator_desired_on(pos, node)
 
 	-- without power levels, side inputs have no influence on output in compare
 	-- mode
-	local mode = minetest.registered_nodes[node.name].comparator_mode
+	local mode = minetest.registered_nodes[node.name].itemquantifier_mode
 	if mode == "comp" then return state end
 
 	-- subtract mode, subtract max(side_inputs) from back input
@@ -147,16 +147,16 @@ local function comparator_desired_on(pos, node)
 end
 
 
--- update comparator state, if needed
+-- update itemquantifier state, if needed
 local function update_self(pos, node)
 	node = node or minetest.get_node(pos)
 	local old_state = mesecon.is_receptor_on(node.name)
-	local new_state = comparator_desired_on(pos, node)
+	local new_state = itemquantifier_desired_on(pos, node)
 	if new_state ~= old_state then
 		if new_state then
-			comparator_activate(pos, node)
+			itemquantifier_activate(pos, node)
 		else
-			comparator_deactivate(pos, node)
+			itemquantifier_deactivate(pos, node)
 		end
 	end
 end
@@ -164,12 +164,12 @@ end
 
 -- compute tile depending on state and mode
 local function get_tiles(state, mode)
-	local top = "mcl_comparators_"..state..".png^"..
-		"mcl_comparators_"..mode..".png"
-	local sides = "mcl_comparators_sides_"..state..".png^"..
-		"mcl_comparators_sides_"..mode..".png"
-	local ends = "mcl_comparators_ends_"..state..".png^"..
-		"mcl_comparators_ends_"..mode..".png"
+	local top = "mcl_itemquantifier_"..state..".png^"..
+		"mcl_itemquantifier_"..mode..".png"
+	local sides = "mcl_itemquantifier_sides_"..state..".png^"..
+		"mcl_itemquantifier_sides_"..mode..".png"
+	local ends = "mcl_itemquantifier_ends_"..state..".png^"..
+		"mcl_itemquantifier_ends_"..mode..".png"
 	return {
 		top, "mcl_stairs_stone_slab_top.png",
 		sides, sides.."^[transformFX",
@@ -186,7 +186,7 @@ end
 
 local function make_rightclick_handler(state, mode)
 	local newnodename =
-		"itemquantifiermod:comparator_"..state.."_"..flipmode(mode)
+		"itemquantifiermod:itemquantifier_"..state.."_"..flipmode(mode)
 	return function (pos, node, clicker)
 		local protname = clicker:get_player_name()
 		if minetest.is_protected(pos, protname) then
@@ -198,9 +198,9 @@ local function make_rightclick_handler(state, mode)
 end
 
 
--- Register the 2 (states) x 2 (modes) comparators
+-- Register the 2 (states) x 2 (modes) itemquantifiers
 
-local icon = "mcl_comparators_item.png"
+local icon = "mcl_itemquantifier_item.png"
 
 local node_boxes = {
 	comp = {
@@ -252,17 +252,17 @@ for _, mode in pairs{"comp", "sub"} do
 	for _, state in pairs{mesecon.state.on, mesecon.state.off} do
 		local state_str = state_strs[state]
 		local nodename =
-			"itemquantifiermod:comparator_"..state_str.."_"..mode
+			"itemquantifiermod:itemquantifier_"..state_str.."_"..mode
 
 		-- Help
 		local longdesc, usagehelp, use_help
 		if state_str == "off" and mode == "comp" then
-			longdesc = S("Redstone comparators are multi-purpose redstone components.").."\n"..
+			longdesc = S("Redstone itemquantifiers are multi-purpose redstone components.").."\n"..
 			S("They can transmit a redstone signal, detect whether a block contains any items and compare multiple signals.")
 
-			usagehelp = S("A redstone comparator has 1 main input, 2 side inputs and 1 output. The output is in arrow direction, the main input is in the opposite direction. The other 2 sides are the side inputs.").."\n"..
+			usagehelp = S("A redstone itemquantifier has 1 main input, 2 side inputs and 1 output. The output is in arrow direction, the main input is in the opposite direction. The other 2 sides are the side inputs.").."\n"..
 				S("The main input can powered in 2 ways: First, it can be powered directly by redstone power like any other component. Second, it is powered if, and only if a container (like a chest) is placed in front of it and the container contains at least one item.").."\n"..
-				S("The side inputs are only powered by normal redstone power. The redstone comparator can operate in two modes: Transmission mode and subtraction mode. It starts in transmission mode and the mode can be changed by using the block.").."\n\n"..
+				S("The side inputs are only powered by normal redstone power. The redstone itemquantifier can operate in two modes: Transmission mode and subtraction mode. It starts in transmission mode and the mode can be changed by using the block.").."\n\n"..
 				S("Transmission mode:\nThe front torch is unlit and lowered. The output is powered if, and only if the main input is powered. The two side inputs are ignored.").."\n"..
 				S("Subtraction mode:\nThe front torch is lit. The output is powered if, and only if the main input is powered and none of the side inputs is powered.")
 		else
@@ -292,21 +292,21 @@ for _, mode in pairs{"comp", "sub"} do
 			paramtype2 = "facedir",
 			sunlight_propagates = false,
 			is_ground_content = false,
-			drop = "itemquantifiermod:comparator_off_comp",
+			drop = "itemquantifiermod:itemquantifier_off_comp",
 			on_construct = update_self,
 			on_rightclick =
 				make_rightclick_handler(state_str, mode),
-			comparator_mode = mode,
-			comparator_onstate = "itemquantifiermod:comparator_on_"..mode,
-			comparator_offstate = "itemquantifiermod:comparator_off_"..mode,
+			itemquantifier_mode = mode,
+			itemquantifier_onstate = "itemquantifiermod:itemquantifier_on_"..mode,
+			itemquantifier_offstate = "itemquantifiermod:itemquantifier_off_"..mode,
 			sounds = mcl_sounds.node_sound_stone_defaults(),
 			mesecons = {
 				receptor = {
 					state = state,
-					rules = comparator_get_output_rules,
+					rules = itemquantifier_get_output_rules,
 				},
 				effector = {
-					rules = comparator_get_input_rules,
+					rules = itemquantifier_get_input_rules,
 					action_change = update_self,
 				}
 			},
@@ -325,11 +325,11 @@ for _, mode in pairs{"comp", "sub"} do
 			end
 			local desc = nodedef.description
 			if mode ~= "sub" and state == mesecon.state.on then
-				desc = S("Redstone Comparator (Powered)")
+				desc = S("Redstone itemquantifier (Powered)")
 			elseif mode == "sub" and state ~= mesecon.state.on then
-				desc = S("Redstone Comparator (Subtract)")
+				desc = S("Redstone itemquantifier (Subtract)")
 			elseif mode == "sub" and state == mesecon.state.on then
-				desc = S("Redstone Comparator (Subtract, Powered)")
+				desc = S("Redstone itemquantifier (Subtract, Powered)")
 			end
 			nodedef.description = desc
 		end
@@ -345,7 +345,7 @@ local quartz  = "mcl_nether:quartz"
 local stone   = "mcl_core:stone"
 
 minetest.register_craft({
-	output = "itemquantifiermod:comparator_off_comp",
+	output = "itemquantifiermod:itemquantifier_off_comp",
 	recipe = {
 		{ "",      "", ""      },
 		{ rstorch, quartz,  rstorch },
@@ -355,22 +355,22 @@ minetest.register_craft({
 
 -- Register active block handlers
 minetest.register_abm({
-	label = "Comparator signal input check (comparator is off)",
+	label = "itemquantifier signal input check (itemquantifier is off)",
 	nodenames = {
-		"itemquantifiermod:comparator_off_comp",
-		"itemquantifiermod:comparator_off_sub",
+		"itemquantifiermod:itemquantifier_off_comp",
+		"itemquantifiermod:itemquantifier_off_sub",
 	},
-	neighbors = {"group:container", "group:comparator_signal"},
+	neighbors = {"group:container", "group:itemquantifier_signal"},
 	interval = 1,
 	chance = 1,
 	action = update_self,
 })
 
 minetest.register_abm({
-	label = "Comparator signal input check (comparator is on)",
+	label = "itemquantifier signal input check (itemquantifier is on)",
 	nodenames = {
-		"itemquantifiermod:comparator_on_comp",
-		"itemquantifiermod:comparator_on_sub",
+		"itemquantifiermod:itemquantifier_on_comp",
+		"itemquantifiermod:itemquantifier_on_sub",
 	},
 	-- needs to run regardless of neighbors to make sure we detect when a
 	-- container is dug
@@ -382,10 +382,10 @@ minetest.register_abm({
 
 -- Add entry aliases for the Help
 if minetest.get_modpath("doc") then
-	doc.add_entry_alias("nodes", "itemquantifiermod:comparator_off_comp",
-				"nodes", "itemquantifiermod:comparator_off_sub")
-	doc.add_entry_alias("nodes", "itemquantifiermod:comparator_off_comp",
-				"nodes", "itemquantifiermod:comparator_on_comp")
-	doc.add_entry_alias("nodes", "itemquantifiermod:comparator_off_comp",
-				"nodes", "itemquantifiermod:comparator_on_sub")
+	doc.add_entry_alias("nodes", "itemquantifiermod:itemquantifier_off_comp",
+				"nodes", "itemquantifiermod:itemquantifier_off_sub")
+	doc.add_entry_alias("nodes", "itemquantifiermod:itemquantifier_off_comp",
+				"nodes", "itemquantifiermod:itemquantifier_on_comp")
+	doc.add_entry_alias("nodes", "itemquantifiermod:itemquantifier_off_comp",
+				"nodes", "itemquantifiermod:itemquantifier_on_sub")
 end
