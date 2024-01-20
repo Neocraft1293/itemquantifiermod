@@ -186,7 +186,7 @@ end
 
 local function make_rightclick_handler(state, mode)
 	local newnodename =
-		"mcl_comparators_2:comparator_"..state.."_"..flipmode(mode)
+		"itemquantifiermod:comparator_"..state.."_"..flipmode(mode)
 	return function (pos, node, clicker)
 		local protname = clicker:get_player_name()
 		if minetest.is_protected(pos, protname) then
@@ -252,7 +252,7 @@ for _, mode in pairs{"comp", "sub"} do
 	for _, state in pairs{mesecon.state.on, mesecon.state.off} do
 		local state_str = state_strs[state]
 		local nodename =
-			"mcl_comparators_2:comparator_"..state_str.."_"..mode
+			"itemquantifiermod:comparator_"..state_str.."_"..mode
 
 		-- Help
 		local longdesc, usagehelp, use_help
@@ -270,7 +270,7 @@ for _, mode in pairs{"comp", "sub"} do
 		end
 
 		local nodedef = {
-			description = S("Redstone Comparator 2"),
+			description = S("Item Quantifier"),
 			inventory_image = icon,
 			wield_image = icon,
 			_doc_items_create_entry = use_help,
@@ -279,7 +279,7 @@ for _, mode in pairs{"comp", "sub"} do
 			drawtype = "nodebox",
 			tiles = get_tiles(state_str, mode),
 			use_texture_alpha = minetest.features.use_texture_alpha_string_modes and "opaque" or false,
-			--wield_image = "mcl_comparators_2_off.png",
+			--wield_image = "itemquantifiermod_off.png",
 			walkable = true,
 			selection_box = collision_box,
 			collision_box = collision_box,
@@ -292,13 +292,13 @@ for _, mode in pairs{"comp", "sub"} do
 			paramtype2 = "facedir",
 			sunlight_propagates = false,
 			is_ground_content = false,
-			drop = "mcl_comparators_2:comparator_off_comp",
+			drop = "itemquantifiermod:comparator_off_comp",
 			on_construct = update_self,
 			on_rightclick =
 				make_rightclick_handler(state_str, mode),
 			comparator_mode = mode,
-			comparator_onstate = "mcl_comparators_2:comparator_on_"..mode,
-			comparator_offstate = "mcl_comparators_2:comparator_off_"..mode,
+			comparator_onstate = "itemquantifiermod:comparator_on_"..mode,
+			comparator_offstate = "itemquantifiermod:comparator_off_"..mode,
 			sounds = mcl_sounds.node_sound_stone_defaults(),
 			mesecons = {
 				receptor = {
@@ -345,7 +345,7 @@ local quartz  = "mcl_nether:quartz"
 local stone   = "mcl_core:stone"
 
 minetest.register_craft({
-	output = "mcl_comparators_2:comparator_off_comp",
+	output = "itemquantifiermod:comparator_off_comp",
 	recipe = {
 		{ "",      "", ""      },
 		{ rstorch, quartz,  rstorch },
@@ -357,8 +357,8 @@ minetest.register_craft({
 minetest.register_abm({
 	label = "Comparator signal input check (comparator is off)",
 	nodenames = {
-		"mcl_comparators_2:comparator_off_comp",
-		"mcl_comparators_2:comparator_off_sub",
+		"itemquantifiermod:comparator_off_comp",
+		"itemquantifiermod:comparator_off_sub",
 	},
 	neighbors = {"group:container", "group:comparator_signal"},
 	interval = 1,
@@ -369,8 +369,8 @@ minetest.register_abm({
 minetest.register_abm({
 	label = "Comparator signal input check (comparator is on)",
 	nodenames = {
-		"mcl_comparators_2:comparator_on_comp",
-		"mcl_comparators_2:comparator_on_sub",
+		"itemquantifiermod:comparator_on_comp",
+		"itemquantifiermod:comparator_on_sub",
 	},
 	-- needs to run regardless of neighbors to make sure we detect when a
 	-- container is dug
@@ -382,10 +382,10 @@ minetest.register_abm({
 
 -- Add entry aliases for the Help
 if minetest.get_modpath("doc") then
-	doc.add_entry_alias("nodes", "mcl_comparators_2:comparator_off_comp",
-				"nodes", "mcl_comparators_2:comparator_off_sub")
-	doc.add_entry_alias("nodes", "mcl_comparators_2:comparator_off_comp",
-				"nodes", "mcl_comparators_2:comparator_on_comp")
-	doc.add_entry_alias("nodes", "mcl_comparators_2:comparator_off_comp",
-				"nodes", "mcl_comparators_2:comparator_on_sub")
+	doc.add_entry_alias("nodes", "itemquantifiermod:comparator_off_comp",
+				"nodes", "itemquantifiermod:comparator_off_sub")
+	doc.add_entry_alias("nodes", "itemquantifiermod:comparator_off_comp",
+				"nodes", "itemquantifiermod:comparator_on_comp")
+	doc.add_entry_alias("nodes", "itemquantifiermod:comparator_off_comp",
+				"nodes", "itemquantifiermod:comparator_on_sub")
 end
